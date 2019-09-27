@@ -1,0 +1,52 @@
+1. Create a field on Account named "Number of Contacts". Populate this field with the number of contacts related to an account
+
+// Create field Name "Number of Contacts"
+
+	MetadataService.MetadataPort metadataservice = new MetadataService.MetadataPort();
+	metadataservice .SessionHeader = new MetadataService.SessionHeader_element();
+	metadataservice .SessionHeader.sessionId = UserInfo.getSessionId();
+	List fields = new List();
+	MetadataService.CustomField customField = new MetadataService.CustomField();
+	customField.fullName = ‘Number_of_Contacts__c.Number_of_Contacts__c’;
+	customField.label = ‘Number of Contacts’;
+	customField.defaultvalue = ‘false’;
+	customField.type_x = ‘Text’;
+	fields.add(customField);
+	metadataservice.createMetadata(fields);
+
+
+
+// Number of contacts Related to Account
+trigger Numberofcontacts Contact (after INSERT, after UPDATE, after DELETE ) {
+Set <Id> accountIds = new Set <Id>();
+List <Account> ListofAccount = new List <Account>();
+ if(Trigger.isInsert){
+    for(Contact con:trigger.new){
+        accountIds.add(con.accountID);
+    }
+}
+if(Trigger.isUpdate|| Trigger.isDelete){
+    for(Contact con:trigger.old){
+        accountIds.add(con.accountID);
+    }
+}
+
+for(Account acc:[SELECT Id,Name,Number_of_Contacts,(Select Id from Contacts) from Account where Id IN: accountIds]){
+    Account accObj = new Account ();
+    accObj.Id = acc.Id;
+    accObj.Number_of_contacts = acc.Contacts.size();
+    ListofAccount.add(accObj);
+}
+
+UPDATE ListofAccount;
+
+
+
+
+
+
+
+
+
+
+    
